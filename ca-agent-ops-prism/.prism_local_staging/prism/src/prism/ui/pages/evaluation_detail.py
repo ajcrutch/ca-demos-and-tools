@@ -1,0 +1,129 @@
+"""Evaluation Detail page."""
+
+import dash
+from dash import html
+from dash_iconify import DashIconify
+import dash_mantine_components as dmc
+from prism.ui.components import run_components
+from prism.ui.components.page_layout import render_page
+from prism.ui.components.run_modals import render_compare_run_modal
+from prism.ui.ids import EvaluationIds as Ids
+
+
+def layout(run_id: str = None):
+  """Renders the Evaluation Detail layout."""
+  return render_page(
+      title=f"Evaluation Run #{run_id}",
+      breadcrumbs_id=Ids.RUN_BREADCRUMBS_CONTAINER,
+      status_id=Ids.RUN_STATUS_BADGE,
+      actions=[
+          dmc.Group(
+              gap="xs",
+              children=[
+                  dmc.Button(
+                      "Pause",
+                      id=Ids.BTN_PAUSE_RUN,
+                      variant="default",
+                      radius="md",
+                      leftSection=DashIconify(icon="bi:pause-fill", width=20),
+                      style={"display": "none"},
+                  ),
+                  dmc.Button(
+                      "Resume",
+                      id=Ids.BTN_RESUME_RUN,
+                      variant="default",
+                      radius="md",
+                      leftSection=DashIconify(icon="bi:play-fill", width=20),
+                      style={"display": "none"},
+                  ),
+                  dmc.Button(
+                      "Cancel",
+                      id=Ids.BTN_CANCEL_RUN_EXEC,
+                      variant="default",
+                      radius="md",
+                      leftSection=DashIconify(icon="bi:x-circle", width=20),
+                      style={"display": "none"},
+                  ),
+                  dmc.Button(
+                      "Archive",
+                      id=Ids.BTN_ARCHIVE,
+                      variant="outline",
+                      color="gray",
+                      radius="md",
+                      leftSection=DashIconify(
+                          icon="material-symbols:archive", width=20
+                      ),
+                      style={"display": "none"},
+                  ),
+                  dmc.Button(
+                      "Restore",
+                      id=Ids.BTN_RESTORE,
+                      variant="filled",
+                      color="green",
+                      radius="md",
+                      leftSection=DashIconify(
+                          icon="material-symbols:settings-backup-restore",
+                          width=20,
+                      ),
+                      style={"display": "none"},
+                  ),
+                  dmc.Button(
+                      "Compare to",
+                      id={
+                          "type": Ids.BTN_OPEN_COMPARE_MODAL,
+                          "index": run_id,
+                      },
+                      leftSection=DashIconify(
+                          icon="material-symbols:compare-arrows", width=20
+                      ),
+                      variant="outline",
+                      color="gray",
+                      radius="md",
+                  ),
+              ],
+          ),
+      ],
+      children=[
+          dash.dcc.Store(id=Ids.RUN_CONTEXT_TRIGGER),
+          dash.dcc.Store(id=Ids.RUN_UPDATE_SIGNAL),
+          dash.dcc.Interval(
+              id=Ids.RUN_POLLING_INTERVAL,
+              interval=3000,
+              n_intervals=0,
+              disabled=True,
+          ),
+          dmc.Stack(
+              gap="xl",
+              children=[
+                  # Summary Stats
+                  dmc.SimpleGrid(
+                      cols={"base": 1, "sm": 2, "lg": 4},
+                      id=Ids.RUN_DETAIL_STATS,
+                      children=[
+                          # Placeholders
+                          dmc.Skeleton(height=100),
+                          dmc.Skeleton(height=100),
+                          dmc.Skeleton(height=100),
+                      ],
+                  ),
+                  # Dynamic Content (Charts and Table - Polling)
+                  html.Div(id=Ids.RUN_CHARTS_CONTAINER),
+                  html.Div(id=Ids.RUN_TRIALS_CONTAINER),
+                  render_compare_run_modal(),
+                  run_components.render_diff_modal(),
+                  dash.dcc.Download(id=Ids.DOWNLOAD_DIFF_COMPONENT),
+                  dash.dcc.Store(id=Ids.RUN_CONTEXT_DIFF_STORE),
+                  dash.dcc.Store(id=Ids.RUN_DATA_STORE),
+              ],
+          ),
+      ],
+  )
+
+
+def register_page():
+  dash.register_page(
+      __name__,
+      path_template="/evaluations/runs/<run_id>",
+      title="Prism | Run Detail",
+      layout=layout,
+  )

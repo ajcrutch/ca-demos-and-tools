@@ -1,0 +1,102 @@
+"""Pydantic schemas for the Agent entity."""
+
+import datetime
+import enum
+from typing import Union
+
+import pydantic
+
+
+class BigQueryConfig(pydantic.BaseModel):
+  """Configuration for BigQuery datasource."""
+
+  tables: list[str]
+
+
+class LookerConfig(pydantic.BaseModel):
+  """Configuration for Looker datasource."""
+
+  instance_uri: str
+  explores: list[str]
+
+
+class LookerFilter(pydantic.BaseModel):
+  """Usage of a filter in a Looker query."""
+
+  field: str
+  value: str | None = None
+
+
+class LookerQuery(pydantic.BaseModel):
+  """Representation of a Looker query."""
+
+  model: str | None = None
+  explore: str | None = None
+  fields: list[str] | None = None
+  filters: list[LookerFilter] | None = None
+  sorts: list[str] | None = None
+  limit: str | None = None
+
+
+class LookerGoldenQuery(pydantic.BaseModel):
+  """A golden query example for Looker."""
+
+  natural_language_questions: list[str]
+  looker_query: LookerQuery
+
+
+class CustomApiConfig(pydantic.BaseModel):
+  """Configuration for a Custom API Agent."""
+
+  api_endpoint: str
+
+
+class AgentConfig(pydantic.BaseModel):
+  """Configuration for an Agent."""
+
+  project_id: str | None = None
+  location: str | None = None
+  agent_resource_id: str | None = None
+  datasource: Union[BigQueryConfig, LookerConfig, CustomApiConfig, None] = None
+  system_instruction: str | None = None
+  looker_client_id: str | None = None
+  looker_client_secret: str | None = None
+  golden_queries: list[LookerGoldenQuery] | None = None
+
+
+class AgentBase(pydantic.BaseModel):
+  """Base schema for Agent data."""
+
+  name: str = pydantic.Field(..., description="Display name of the agent")
+  config: AgentConfig | None = pydantic.Field(
+      default_factory=AgentConfig, description="Configuration details"
+  )
+
+
+class AgentCreate(AgentBase):
+  """Schema for creating a new Agent."""
+
+
+class AgentUpdate(pydantic.BaseModel):
+  """Schema for updating an existing Agent."""
+
+  name: str | None = None
+  config: AgentConfig | None = None
+
+
+class Agent(AgentBase):
+  """Schema for a persisted Agent."""
+
+  id: int
+  created_at: datetime.datetime
+  modified_at: datetime.datetime | None = None
+  is_archived: bool = False
+
+  model_config = pydantic.ConfigDict(from_attributes=True)
+
+
+class UniqueDatasources(pydantic.BaseModel):
+  """Unique datasource names grouped by type."""
+
+  bq: list[str]
+  looker: list[str]
