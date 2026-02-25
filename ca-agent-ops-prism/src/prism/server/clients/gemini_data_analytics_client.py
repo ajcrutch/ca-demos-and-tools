@@ -1,17 +1,3 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Client for interacting with the Google Gemini Data Analytics API."""
 
 import enum
@@ -23,7 +9,7 @@ from typing import Any
 from google.api_core import client_options
 import google.auth
 from google.auth import exceptions as auth_exceptions
-from google.cloud import geminidataanalytics
+from google.cloud import geminidataanalytics_v1beta as geminidataanalytics
 from google.protobuf import field_mask_pb2
 from google.protobuf import json_format
 from prism.common.schemas.agent import AgentBase
@@ -187,6 +173,7 @@ class GeminiDataAnalyticsClient:
 
     return None
 
+
   def create_agent(
       self,
       display_name: str,
@@ -204,7 +191,6 @@ class GeminiDataAnalyticsClient:
         The created AgentBase.
     """
     datasource_references = self._get_datasource_references(config)
-
     context = geminidataanalytics.Context(
         system_instruction=config.system_instruction or "",
         datasource_references=datasource_references,
@@ -234,6 +220,7 @@ class GeminiDataAnalyticsClient:
     request = geminidataanalytics.GetDataAgentRequest(name=agent_name)
     try:
       agent = self.agent_client.get_data_agent(request=request)
+      print(agent)
       return self._pb_to_agent_base(agent)
     except Exception as e:
       logging.error("An error occurred: %s", e)
@@ -322,6 +309,7 @@ class GeminiDataAnalyticsClient:
           datasource_references=final_datasource,
       )
 
+      print(new_context)
       agent_update = geminidataanalytics.DataAgent(
           name=agent_name,
           data_analytics_agent=geminidataanalytics.DataAnalyticsAgent(
@@ -340,7 +328,23 @@ class GeminiDataAnalyticsClient:
 
       try:
         operation = self.agent_client.update_data_agent(request=request)
-        updated_agent = operation.result()
+        try:
+          updated_agent = operation.result(timeout=300)
+        except Exception as e:
+          logging.error(
+              "Failed to get result from agent update operation: %s", e
+          )
+          # Attempt to fetch the agent as a fallback if the operation result fails
+          # but the update might have actually succeeded server-side.
+          try:
+            updated_agent = self.agent_client.get_data_agent(name=agent_name)
+            logging.info(
+                "Fallback: Successfully fetched agent after operation error."
+            )
+          except Exception as fetch_error:
+            logging.error("Fallback fetch also failed: %s", fetch_error)
+            raise e
+
         return self._pb_to_agent_base(updated_agent)
       except Exception as e:
         logging.error("An error occurred during update: %s", e)

@@ -1,17 +1,3 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Agent Detail Page."""
 
 import dash
@@ -134,8 +120,8 @@ def _edit_modal():
                                                       label="BigQuery Tables",
                                                       description=(
                                                           "Enter full paths"
-                                                          " (proj.ds.tab),"
-                                                          " one per line"
+                                                          " (proj.ds.tab), one"
+                                                          " per line"
                                                       ),
                                                       placeholder="project.dataset.table_1\nproject.dataset.table_2",
                                                       id=AgentIds.Detail.INPUT_EDIT_BQ_TABLES,
@@ -147,6 +133,41 @@ def _edit_modal():
                                                       id=AgentIds.Detail.INPUT_EDIT_BQ_TABLES_PREVIEW,
                                                       gap="xs",
                                                       mt="xs",
+                                                  ),
+                                              ]
+                                          ),
+                                      ),
+                                  ),
+                                  # Custom API Config Card
+                                  html.Div(
+                                      id=AgentIds.Detail.CONTAINER_EDIT_CUSTOM_API_CONFIG,
+                                      style={"display": "none"},
+                                      children=dmc.Paper(
+                                          withBorder=True,
+                                          p="lg",
+                                          radius="md",
+                                          bg="gray.0",
+                                          children=dmc.Stack(
+                                              children=[
+                                                  dmc.Group(
+                                                      children=[
+                                                          DashIconify(
+                                                              icon="bi:link",
+                                                              width=24,
+                                                              color="blue",
+                                                          ),
+                                                          dmc.Text(
+                                                              "Custom API Configuration",
+                                                              fw=600,
+                                                              size="sm",
+                                                          ),
+                                                      ]
+                                                  ),
+                                                  dmc.TextInput(
+                                                      label="API Endpoint URL",
+                                                      placeholder="https://your-api.com/query",
+                                                      id=AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT,
+                                                      radius="md",
                                                   ),
                                               ]
                                           ),
@@ -189,8 +210,8 @@ def _edit_modal():
                                                   dmc.Textarea(
                                                       label="Looker Explores",
                                                       description=(
-                                                          "e.g., model.exp,"
-                                                          " one per line"
+                                                          "e.g., model.exp, one"
+                                                          " per line"
                                                       ),
                                                       placeholder="model_1.explore_1\nmodel_2.explore_2",
                                                       id=AgentIds.Detail.INPUT_EDIT_LOOKER_EXPLORES,

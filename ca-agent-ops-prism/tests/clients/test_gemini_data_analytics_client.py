@@ -2,12 +2,11 @@
 
 from unittest import mock
 
-from google.cloud import geminidataanalytics
 from prism.common.schemas.agent import AgentBase
-from prism.common.schemas.agent import AgentBase
-from prism.common.schemas.agent import AgentConfig
 from prism.common.schemas.agent import AgentConfig
 from prism.common.schemas.agent import BigQueryConfig
+from prism.common.schemas.trace import AskQuestionResponse
+from prism.common.schemas.trace import DurationMetrics
 from prism.server.clients.gemini_data_analytics_client import GeminiDataAnalyticsClient
 import pytest
 
@@ -52,6 +51,7 @@ def make_mock_agent_pb(
     resource_id="agent-123",
     display_name="Test Agent",
     sys_instruct="instruction",
+    **kwargs,
 ):
   """Helper to create a mock DataAgent protobuf."""
   mock_pb = mock.Mock()
@@ -106,6 +106,7 @@ def test_create_agent(client, mock_gemini_lib):
       datasource=BigQueryConfig(tables=["p.d.t"]),
   )
 
+
   mock_operation = mock.Mock()
   mock_operation.result.return_value = make_mock_agent_pb(
       "new-agent", "Test Agent"
@@ -118,7 +119,6 @@ def test_create_agent(client, mock_gemini_lib):
   assert created_agent.config.agent_resource_id == "new-agent"
 
   client.agent_client.create_data_agent.assert_called_once()
-  # Verify BQ datasource construction
   mock_gemini_lib.BigQueryTableReference.assert_called_with(
       project_id="p", dataset_id="d", table_id="t"
   )
@@ -159,7 +159,7 @@ def test_update_agent(client, mock_gemini_lib):
   client.agent_client.update_data_agent.assert_called_once()
   # Verify Context called with new instruction
   # Note: mock_gemini_lib.Context is called to create the NEW context
-  args, kwargs = mock_gemini_lib.Context.call_args
+  _, kwargs = mock_gemini_lib.Context.call_args
   assert kwargs["system_instruction"] == "new desc"
 
 
@@ -180,9 +180,6 @@ def test_ask_question(client, mock_json_format):
 
 def test_ask_question_response_reparsing():
   """Tests AskQuestionResponse.protobuf_response property."""
-  from prism.common.schemas.trace import AskQuestionResponse
-  from prism.common.schemas.trace import DurationMetrics
-
   trace_data = [{"user_message": {"text": "hello"}}]
   result = AskQuestionResponse(
       response=trace_data,
@@ -194,3 +191,5 @@ def test_ask_question_response_reparsing():
   assert len(pbs) == 1
   # proto-plus access
   assert pbs[0].user_message.text == "hello"
+
+

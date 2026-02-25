@@ -1,17 +1,3 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """IDs for Agent Management Pages."""
 
 import dash
@@ -29,6 +15,7 @@ class AgentIds:
 
     BTN_MONITOR = "agent-home-btn-monitor"
     CARD_GRID = "agent-home-card-grid"
+    SWITCH_ARCHIVED = "agent-home-switch-archived"
 
     class ChoiceModal:
       ROOT = "agent-choice-modal-root"
@@ -70,6 +57,7 @@ class AgentIds:
     INPUT_BQ_TABLES = "agent-form-input-bq-tables"
     INPUT_BQ_TABLES_PREVIEW = "agent-form-input-bq-tables-preview"
     INPUT_LOOKER_URI = "agent-form-input-looker-uri"
+    INPUT_CUSTOM_API_ENDPOINT = "agent-form-input-custom-api-endpoint"
     INPUT_LOOKER_EXPLORES = "agent-form-input-looker-explores"
     INPUT_LOOKER_EXPLORES_PREVIEW = "agent-form-input-looker-explores-preview"
     INPUT_LOOKER_CLIENT_ID = "agent-form-input-looker-client-id"
@@ -107,11 +95,18 @@ class AgentIds:
     INPUT_EDIT_LOCATION = "agent-detail-input-edit-location"
     INPUT_EDIT_ENV = "agent-detail-input-edit-env"
     CONTAINER_EDIT_LOOKER_CONFIG = "agent-detail-container-edit-looker-config"
+    CONTAINER_EDIT_CUSTOM_API_CONFIG = "agent-detail-container-edit-custom-api-config"
     CONTAINER_EDIT_BQ_CONFIG = "agent-detail-container-edit-bq-config"
     INPUT_EDIT_BQ_TABLES = "agent-detail-input-edit-bq-tables"
     INPUT_EDIT_BQ_TABLES_PREVIEW = "agent-detail-input-edit-bq-tables-preview"
     INPUT_EDIT_LOOKER_URI = "agent-detail-input-edit-looker-uri"
+    INPUT_EDIT_CUSTOM_API_ENDPOINT = "agent-detail-input-edit-custom-api-endpoint"
     INPUT_EDIT_LOOKER_EXPLORES = "agent-detail-input-edit-looker-explores"
+    INPUT_EDIT_LOOKER_EXPLORES = "agent-detail-input-edit-looker-explores"
+    SWITCH_INSTRUCTION_VIEW = "agent-detail-switch-instruction-view"
+    INSTRUCTION_MARKDOWN = "agent-detail-instruction-markdown"
+    INSTRUCTION_RAW = "agent-detail-instruction-raw"
+
     INPUT_EDIT_LOOKER_EXPLORES_PREVIEW = (
         "agent-detail-input-edit-looker-explores-preview"
     )
@@ -124,6 +119,8 @@ class AgentIds:
     INPUT_DUPLICATE_NAME = "agent-detail-input-duplicate-name"
     BTN_DUPLICATE_SUBMIT = "agent-detail-btn-duplicate-submit"
     DUPLICATE_LOADING_OVERLAY = "agent-detail-duplicate-loading-overlay"
+    BTN_ARCHIVE = "agent-detail-btn-archive"
+    BTN_RESTORE = "agent-detail-btn-restore"
 
     MAX_WIDTH = "100%"
     CONTAINER_DATASOURCE = "agent-detail-container-datasource"
@@ -145,3 +142,5 @@ class AgentIds:
       BTN_CANCEL = "agent-detail-eval-btn-cancel"
       SUITE_DETAILS = "agent-detail-eval-suite-details"
       ALERT_VALIDATION = "agent-detail-eval-alert-validation"
+      TOGGLE_SUGGESTIONS = "agent-detail-eval-toggle-suggestions"
+      INPUT_CONCURRENCY = "agent-detail-eval-input-concurrency"

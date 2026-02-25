@@ -1,23 +1,11 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Callbacks for Agent Detail Page."""
 
+import json
 import logging
 import time
 from typing import Any
 import dash
+from dash import dcc
 from dash import html
 from dash import Input
 from dash import Output
@@ -183,12 +171,35 @@ def update_agent_details(pathname: str, refresh_trigger: Any):
           disabled=True,
       ),
       dmc.Button(
+          "Archive",
+          id=AgentIds.Detail.BTN_ARCHIVE,
+          variant="outline",
+          radius="md",
+          leftSection=DashIconify(icon="material-symbols:archive", width=20),
+          color="gray",
+          style={"display": "none"}
+          if getattr(agent, "is_archived", False)
+          else {"display": "block"},
+      ),
+      dmc.Button(
+          "Restore",
+          id=AgentIds.Detail.BTN_RESTORE,
+          variant="filled",
+          radius="md",
+          leftSection=DashIconify(
+              icon="material-symbols:settings-backup-restore", width=20
+          ),
+          color="green",
+          style={"display": "block"}
+          if getattr(agent, "is_archived", False)
+          else {"display": "none"},
+      ),
+      dmc.Button(
           "Run Evaluation",
           id=AgentIds.Detail.BTN_RUN_EVAL,
           variant="filled",
           color="blue",
           radius="md",
-          fw=600,
           leftSection=DashIconify(icon="bi:play-fill", width=20),
           disabled=True,
       ),
@@ -223,26 +234,34 @@ def update_agent_details(pathname: str, refresh_trigger: Any):
       ),
   )
 
-  main_grid = dmc.SimpleGrid(
-      cols={"base": 1, "md": 2},
-      spacing="md",
-      children=[
-          render_detail_card(
-              title="System Instruction",
-              description="The set of instructions sent to the LLM",
-              children=dmc.ScrollArea(
-                  mah=300,
-                  children=html.Div(
-                      id=AgentIds.Detail.INSTRUCTION,
-                      children=dmc.Skeleton(
-                          visible=True,
-                          height=150,
-                          radius="md",
-                      ),
-                  ),
+  system_instruction_card = render_detail_card(
+      title="System Instruction",
+      description="The set of instructions sent to the LLM",
+      action=dmc.Switch(
+          id=AgentIds.Detail.SWITCH_INSTRUCTION_VIEW,
+          label="Markdown",
+          checked=True,
+          size="sm",
+      ),
+      children=dmc.ScrollArea(
+          mah=500,
+          children=html.Div(
+              id=AgentIds.Detail.INSTRUCTION,
+              children=dmc.Skeleton(
+                  visible=True,
+                  height=150,
+                  radius="md",
               ),
           ),
+      ),
+  )
+
+  # Vertical Stack Layout
+  main_grid = dmc.Stack(
+      gap="lg",
+      children=[
           datasource_skeleton,
+          system_instruction_card,
       ],
   )
 
@@ -515,12 +534,30 @@ def fetch_remote_config(trigger_data):
     )
 
   # 1. System Instruction
+  # 1. System Instruction
   instruction = gcp_agent.config.system_instruction or "No instruction."
-  instruction_ui = dmc.Text(
-      instruction,
-      size="sm",
-      c="dark",
-      style={"whiteSpace": "pre-wrap"},
+
+  # Markdown View (Default)
+  markdown_view = html.Div(
+      id=AgentIds.Detail.INSTRUCTION_MARKDOWN,
+      style={"display": "block"},
+      children=dcc.Markdown(instruction),
+  )
+
+  # Raw View (Hidden)
+  raw_view = html.Div(
+      id=AgentIds.Detail.INSTRUCTION_RAW,
+      style={"display": "none"},
+      children=dmc.Code(
+          instruction,
+          block=True,
+          style={"whiteSpace": "pre-wrap"},
+      ),
+  )
+
+  instruction_ui = html.Div(
+      style={"maxHeight": "500px", "overflowY": "auto"},
+      children=html.Div([markdown_view, raw_view]),
   )
 
   # 2. Datasource
@@ -591,9 +628,28 @@ def fetch_remote_config(trigger_data):
     ds_children.append(
         dmc.Stack(gap=4, align="flex-start", children=table_children)
     )
+  elif isinstance(datasource, agent_schemas.CustomApiConfig):
+    ds_type = "Custom API"
+    endpoint = datasource.api_endpoint or ""
+
+    ds_children.append(
+        dmc.Stack(
+            gap=4,
+            align="flex-start",
+            children=[
+                dmc.Text("API Endpoint URL", size="xs", c="dimmed"),
+                dmc.Code(
+                    endpoint,
+                    block=False,
+                    style={"display": "inline-block"},
+                ),
+            ],
+            mb="sm",
+        )
+    )
 
   # Badge Logic
-  ds_colors = {"Looker": "blue", "BQ": "orange"}
+  ds_colors = {"Looker": "blue", "BQ": "orange", "Custom API": "green"}
   badge = dmc.Badge(
       ds_type,
       color=ds_colors.get(ds_type, "gray"),
@@ -617,6 +673,24 @@ def fetch_remote_config(trigger_data):
   )
 
 
+dash.clientside_callback(
+    """
+    function(checked) {
+        if (checked) {
+            return [{'display': 'block'}, {'display': 'none'}];
+        } else {
+            return [{'display': 'none'}, {'display': 'block'}];
+        }
+    }
+    """,
+    [
+        Output(AgentIds.Detail.INSTRUCTION_MARKDOWN, "style"),
+        Output(AgentIds.Detail.INSTRUCTION_RAW, "style"),
+    ],
+    Input(AgentIds.Detail.SWITCH_INSTRUCTION_VIEW, "checked"),
+)
+
+
 @typed_callback(
     [
         Output(AgentIds.Detail.MODAL_EDIT, "opened"),
@@ -633,6 +707,10 @@ def fetch_remote_config(trigger_data):
         Output(AgentIds.Detail.CONTAINER_EDIT_BQ_CONFIG, "style"),
         # BQ Values
         Output(AgentIds.Detail.INPUT_EDIT_BQ_TABLES, CP.VALUE),
+        # Custom API Visibility
+        Output(AgentIds.Detail.CONTAINER_EDIT_CUSTOM_API_CONFIG, "style"),
+        # Custom API Values
+        Output(AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT, CP.VALUE),
     ],
     [
         Input(AgentIds.Detail.BTN_EDIT, CP.N_CLICKS),
@@ -646,7 +724,7 @@ def fetch_remote_config(trigger_data):
 def open_edit_modal(n_clicks, gcp_config, pathname):
   """Opens the edit modal and pre-fills values."""
   if not n_clicks:
-    return (dash.no_update,) * 10
+    return (dash.no_update,) * 12
 
   current_name = ""
   instruction = ""
@@ -655,10 +733,14 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
   looker_uri = ""
   looker_explores = []
   looker_client_id = ""
+  looker_client_id = ""
   looker_client_secret = ""
 
   is_bq = False
   bq_tables = []
+
+  is_custom_api = False
+  custom_api_endpoint = ""
 
   # Fetch Agent Name from DB (Reliable Source)
   try:
@@ -696,6 +778,7 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
           looker_client_id = agent.config.looker_client_id or ""
           looker_client_secret = agent.config.looker_client_secret or ""
 
+
         # Check for BQ
         if agent.config.datasource and isinstance(
             agent.config.datasource, agent_schemas.BigQueryConfig
@@ -703,9 +786,16 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
           is_bq = True
           bq_tables = agent.config.datasource.tables or []
 
-        # Check if Looker type
-        if isinstance(agent.config.datasource, agent_schemas.LookerConfig):
-          is_looker = True
+        # Check for Custom API
+        if agent.config.datasource and isinstance(
+            agent.config.datasource, agent_schemas.CustomApiConfig
+        ):
+          is_custom_api = True
+          custom_api_endpoint = agent.config.datasource.api_endpoint or ""
+
+        # Check if Custom API type
+        if isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+          is_custom_api = True
 
   except Exception:  # pylint: disable=broad-except
     pass
@@ -727,6 +817,10 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
   if is_bq:
     bq_style = {"display": "block"}
 
+  custom_api_style = {"display": "none"}
+  if is_custom_api:
+    custom_api_style = {"display": "block"}
+
   return (
       True,
       current_name,
@@ -738,6 +832,9 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
       looker_client_secret,
       bq_style,
       "\n".join(bq_tables),
+      custom_api_style,
+      custom_api_endpoint,
+      custom_api_endpoint,
   )
 
 
@@ -763,6 +860,7 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
         State(AgentIds.Detail.INPUT_EDIT_LOOKER_CLIENT_ID, CP.VALUE),
         State(AgentIds.Detail.INPUT_EDIT_LOOKER_CLIENT_SECRET, CP.VALUE),
         State(AgentIds.Detail.INPUT_EDIT_BQ_TABLES, CP.VALUE),
+        State(AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT, CP.VALUE),
     ],
     prevent_initial_call=True,
 )
@@ -776,6 +874,7 @@ def submit_edit(
     looker_client_id,
     looker_client_secret,
     bq_tables_raw,
+    custom_api_endpoint,
 ):
   """Submits the edit form."""
   if not n_clicks:
@@ -805,6 +904,11 @@ def submit_edit(
         for t in bq_tables:
           if not is_valid_bq_table(t):
             invalid_fields.append(f"Invalid BQ Table: {t}")
+      elif isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+        if not custom_api_endpoint:
+          invalid_fields.append("Invalid API Endpoint: Must not be empty")
+
+
   except (ValueError, IndexError):
     return False, False, dash.no_update, dash.no_update
 
@@ -833,13 +937,23 @@ def submit_edit(
 
       # Update Datasource based on what was there
       if isinstance(agent.config.datasource, agent_schemas.BigQueryConfig):
-        new_config.datasource = agent_schemas.BigQueryConfig(tables=bq_tables)
+        new_config.datasource = agent_schemas.BigQueryConfig(
+            tables=bq_tables or [],
+        )
+      elif isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+        new_config.datasource = agent_schemas.CustomApiConfig(
+            api_endpoint=custom_api_endpoint or "",
+        )
       elif isinstance(agent.config.datasource, agent_schemas.LookerConfig):
         new_config.datasource = agent_schemas.LookerConfig(
             instance_uri=looker_uri, explores=looker_explores
         )
         new_config.looker_client_id = looker_client_id
         new_config.looker_client_secret = looker_client_secret
+
+        new_config.looker_client_id = looker_client_id
+        new_config.looker_client_secret = looker_client_secret
+
     else:
       # Fallback (should not happen for valid agent)
       # If fallback, we don't know the type, so we can't easily set datasource.
@@ -1091,10 +1205,14 @@ def handle_suite_selection(suite_id, pathname):
     [
         State("url", CP.PATHNAME),
         State(AgentIds.Detail.EvalModal.SELECT_SUITE, CP.VALUE),
+        State(AgentIds.Detail.EvalModal.TOGGLE_SUGGESTIONS, "checked"),
+        State(AgentIds.Detail.EvalModal.INPUT_CONCURRENCY, CP.VALUE),
     ],
     prevent_initial_call=True,
 )
-def start_evaluation(n_clicks, pathname, suite_id):
+def start_evaluation(
+    n_clicks, pathname, suite_id, generate_suggestions, concurrency
+):
   """Starts a new evaluation run."""
   if not n_clicks or not suite_id:
     return dash.no_update
@@ -1131,7 +1249,12 @@ def start_evaluation(n_clicks, pathname, suite_id):
       }]
 
   try:
-    run = client.runs.create_run(agent_id=agent_id, test_suite_id=s_id)
+    run = client.runs.create_run(
+        agent_id=agent_id,
+        test_suite_id=s_id,
+        generate_suggestions=generate_suggestions,
+        concurrency=concurrency,
+    )
     # Redirect to the new run page
     return f"/evaluations/runs/{run.id}", dash.no_update
   except Exception as e:  # pylint: disable=broad-except
@@ -1273,3 +1396,61 @@ def test_looker_connectivity(n_clicks, uri, client_id, client_secret):
     return result.get("message", "Success!"), False, color, False
   except Exception as e:  # pylint: disable=broad-except
     return f"Test failed: {str(e)}", False, "red", False
+
+
+@typed_callback(
+    [
+        Output(
+            AgentIds.Detail.STORE_REFRESH_TRIGGER, CP.DATA, allow_duplicate=True
+        ),
+        Output(
+            "notification-container", "sendNotifications", allow_duplicate=True
+        ),
+    ],
+    [
+        Input(AgentIds.Detail.BTN_ARCHIVE, CP.N_CLICKS),
+        Input(AgentIds.Detail.BTN_RESTORE, CP.N_CLICKS),
+    ],
+    [State("url", CP.PATHNAME)],
+    prevent_initial_call=True,
+)
+def toggle_agent_archive(
+    archive_clicks: int, restore_clicks: int, pathname: str
+):
+  """Archives or restores an agent."""
+  ctx = dash.callback_context
+  if not ctx.triggered:
+    return dash.no_update, dash.no_update
+
+  triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+  if not archive_clicks and not restore_clicks:
+    return dash.no_update, dash.no_update
+
+  try:
+    agent_id = int(pathname.split("/")[-1])
+  except (ValueError, IndexError):
+    return dash.no_update, dash.no_update
+
+  client = get_client().agents
+  try:
+    if triggered_id == AgentIds.Detail.BTN_ARCHIVE:
+      client.archive_agent(agent_id)
+      msg = "Agent archived successfully."
+    else:
+      client.unarchive_agent(agent_id)
+      msg = "Agent restored successfully."
+
+    return {"ts": time.time()}, {
+        "title": "Success",
+        "message": msg,
+        "color": "green",
+    }
+  except Exception as e:  # pylint: disable=broad-exception-caught
+    logging.error("Failed to toggle agent archive: %s", e)
+    return dash.no_update, {
+        "title": "Error",
+        "message": f"Failed to update agent: {str(e)}",
+        "color": "red",
+    }
+
+
