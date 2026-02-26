@@ -152,6 +152,41 @@ def _edit_modal():
                                           ),
                                       ),
                                   ),
+                                  # Custom API Config Card
+                                  html.Div(
+                                      id=AgentIds.Detail.CONTAINER_EDIT_CUSTOM_API_CONFIG,
+                                      style={"display": "none"},
+                                      children=dmc.Paper(
+                                          withBorder=True,
+                                          p="lg",
+                                          radius="md",
+                                          bg="gray.0",
+                                          children=dmc.Stack(
+                                              children=[
+                                                  dmc.Group(
+                                                      children=[
+                                                          DashIconify(
+                                                              icon="bi:link",
+                                                              width=24,
+                                                              color="blue",
+                                                          ),
+                                                          dmc.Text(
+                                                              "Custom API Configuration",
+                                                              fw=600,
+                                                              size="sm",
+                                                          ),
+                                                      ]
+                                                  ),
+                                                  dmc.TextInput(
+                                                      label="API Endpoint URL",
+                                                      placeholder="https://your-api.com/query",
+                                                      id=AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT,
+                                                      radius="md",
+                                                  ),
+                                              ]
+                                          ),
+                                      ),
+                                  ),
                                   # Looker Config Card
                                   # We wrap this in a div to control
                                   # visibility via callback

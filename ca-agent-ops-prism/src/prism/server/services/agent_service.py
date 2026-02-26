@@ -67,6 +67,14 @@ class AgentService:
 
   def register_gcp_agent(self, name: str, config: AgentConfig) -> Agent:
     """Creates an agent on GCP and then persists it locally."""
+    # Custom Agents do not use GCP Gemini Data Analytics and shouldn't be registered there
+    from prism.common.schemas.agent import CustomApiConfig
+    if isinstance(config.datasource, CustomApiConfig):
+      return self.agent_repository.create(
+          name=name,
+          config=config,
+      )
+
     parent = f"projects/{config.project_id}/locations/{config.location}"
     client = GeminiDataAnalyticsClient(project=parent)
 
@@ -117,6 +125,18 @@ class AgentService:
     if not agent:
       return None
 
+    # Do not call GCP for custom API agents
+    if agent.datasource_config and "api_endpoint" in agent.datasource_config:
+      from prism.common.schemas.agent import CustomApiConfig
+      config = AgentConfig(
+          project_id=agent.project_id,
+          location=agent.location,
+          agent_resource_id=None,
+          datasource=CustomApiConfig(api_endpoint=agent.datasource_config["api_endpoint"]),
+          system_instruction=None,
+      )
+      return AgentBase(name=agent.name, config=config)
+
     parent = f"projects/{agent.project_id}/locations/{agent.location}"
     client = GeminiDataAnalyticsClient(project=parent)
 
@@ -138,6 +158,9 @@ class AgentService:
     if not agent:
       return None
 
+    if agent.datasource_config and "api_endpoint" in agent.datasource_config:
+      return None  # Custom Agents do not reside on GCP
+
     parent = f"projects/{agent.project_id}/locations/{agent.location}"
     client = GeminiDataAnalyticsClient(project=parent)
 
@@ -156,8 +179,11 @@ class AgentService:
       raise ValueError(f"Agent {agent_id} not found")
 
     # 1. Update on GCP if instruction or config provided
+    # Skip GCP updates for Custom agents
+    is_custom = agent.datasource_config and "api_endpoint" in agent.datasource_config
+    
     system_instruction = config.system_instruction if config else None
-    if system_instruction is not None:
+    if system_instruction is not None and not is_custom:
       parent = f"projects/{agent.project_id}/locations/{agent.location}"
       client = GeminiDataAnalyticsClient(project=parent)
       agent_name = f"{parent}/dataAgents/{agent.agent_resource_id}"

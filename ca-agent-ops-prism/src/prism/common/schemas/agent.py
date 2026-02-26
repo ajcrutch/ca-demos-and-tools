@@ -34,13 +34,19 @@ class LookerConfig(pydantic.BaseModel):
   explores: list[str]
 
 
+class CustomApiConfig(pydantic.BaseModel):
+  """Configuration for a Custom API Agent."""
+
+  api_endpoint: str
+
+
 class AgentConfig(pydantic.BaseModel):
   """Configuration for an Agent."""
 
   project_id: str | None = None
   location: str | None = None
   agent_resource_id: str | None = None
-  datasource: Union[BigQueryConfig, LookerConfig, None] = None
+  datasource: Union[BigQueryConfig, LookerConfig, CustomApiConfig, None] = None
   system_instruction: str | None = None
   looker_client_id: str | None = None
   looker_client_secret: str | None = None

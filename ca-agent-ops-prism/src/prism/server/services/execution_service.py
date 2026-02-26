@@ -201,7 +201,15 @@ class ExecutionService:
       )
 
       # Call Client (ExecutionService is now guaranteed to have a client)
-      response = self.client.ask_question(
+      client = self.client
+      if agent.datasource_config and "api_endpoint" in agent.datasource_config:
+        from prism.server.services.custom_api_client import CustomApiClient
+
+        client = CustomApiClient(
+            endpoint_url=agent.datasource_config["api_endpoint"]
+        )
+
+      response = client.ask_question(
           agent_id=agent_resource_id,
           question=question,
           client_id=agent.looker_client_id,
@@ -440,7 +448,15 @@ class ExecutionService:
     agent_resource_id = f"projects/{agent.project_id}/locations/{agent.location}/dataAgents/{agent.agent_resource_id}"
 
     # 3. Call Client
-    response = self.client.ask_question(
+    client = self.client
+    if agent.datasource_config and "api_endpoint" in agent.datasource_config:
+      from prism.server.services.custom_api_client import CustomApiClient
+
+      client = CustomApiClient(
+          endpoint_url=agent.datasource_config["api_endpoint"]
+      )
+
+    response = client.ask_question(
         agent_id=agent_resource_id,
         question=question,
         client_id=agent.looker_client_id,
