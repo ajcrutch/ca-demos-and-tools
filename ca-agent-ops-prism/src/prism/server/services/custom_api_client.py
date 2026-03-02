@@ -99,6 +99,43 @@ class CustomApiClient:
                     }
                 })
 
+            # 3. System Message (Looker URL)
+            if data.get("looker_url"):
+                messages.append({
+                    "system_message": {
+                         "text": {
+                             "parts": [f"**Looker URL:** [{data['looker_url']}]({data['looker_url']})"]
+                         }
+                    }
+                })
+
+            # 4. System Message (Intent)
+            if data.get("intent"):
+                intent_items = [f"- **{k}**: {v}" for k, v in data["intent"].items() if v is True]
+                if intent_items:
+                    intent_str = "**Extracted Intent:**\n" + "\n".join(intent_items)
+                    messages.append({
+                        "system_message": {
+                            "text": {
+                                "parts": [intent_str]
+                            }
+                        }
+                    })
+
+            # 5. System Message (Verification)
+            if data.get("verification"):
+                ver = data["verification"]
+                ver_status = "✅ Verified" if ver.get("verified") else "❌ Not Verified"
+                ver_exp = ver.get("explanation", "No explanation provided.")
+                ver_str = f"**Verification Status:** {ver_status}\n\n*Explanation:* {ver_exp}"
+                messages.append({
+                    "system_message": {
+                        "text": {
+                            "parts": [ver_str]
+                        }
+                    }
+                })
+
             # Check if there's any raw text / grounded text or fallback which can act as a textual alternative
             if data.get("results"):
                  # We can embed the result data snippet in the system data message as well if needed
