@@ -21,8 +21,8 @@ import sys
 import dash
 import dash_mantine_components as dmc
 from prism.client.prism_client import PrismClient
-from prism.ui import callbacks
 from prism.ui import pages
+from prism.ui import callbacks
 from prism.ui.components import shell
 from prism.ui.constants import GLOBAL_PROJECT_ID_STORE
 

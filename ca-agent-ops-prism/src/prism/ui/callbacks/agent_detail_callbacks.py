@@ -633,6 +633,9 @@ def fetch_remote_config(trigger_data):
         Output(AgentIds.Detail.CONTAINER_EDIT_BQ_CONFIG, "style"),
         # BQ Values
         Output(AgentIds.Detail.INPUT_EDIT_BQ_TABLES, CP.VALUE),
+        # Custom API
+        Output(AgentIds.Detail.CONTAINER_EDIT_CUSTOM_API_CONFIG, "style"),
+        Output(AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT, CP.VALUE),
     ],
     [
         Input(AgentIds.Detail.BTN_EDIT, CP.N_CLICKS),
@@ -646,7 +649,7 @@ def fetch_remote_config(trigger_data):
 def open_edit_modal(n_clicks, gcp_config, pathname):
   """Opens the edit modal and pre-fills values."""
   if not n_clicks:
-    return (dash.no_update,) * 10
+    return (dash.no_update,) * 12
 
   current_name = ""
   instruction = ""
@@ -659,6 +662,9 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
 
   is_bq = False
   bq_tables = []
+
+  custom_api_endpoint = ""
+  is_custom_api = False
 
   # Fetch Agent Name from DB (Reliable Source)
   try:
@@ -707,6 +713,10 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
         if isinstance(agent.config.datasource, agent_schemas.LookerConfig):
           is_looker = True
 
+        if isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+          is_custom_api = True
+          custom_api_endpoint = agent.config.datasource.api_endpoint
+
   except Exception:  # pylint: disable=broad-except
     pass
 
@@ -727,6 +737,10 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
   if is_bq:
     bq_style = {"display": "block"}
 
+  custom_api_style = {"display": "none"}
+  if is_custom_api:
+    custom_api_style = {"display": "block"}
+
   return (
       True,
       current_name,
@@ -738,6 +752,8 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
       looker_client_secret,
       bq_style,
       "\n".join(bq_tables),
+      custom_api_style,
+      custom_api_endpoint,
   )
 
 
@@ -763,6 +779,7 @@ def open_edit_modal(n_clicks, gcp_config, pathname):
         State(AgentIds.Detail.INPUT_EDIT_LOOKER_CLIENT_ID, CP.VALUE),
         State(AgentIds.Detail.INPUT_EDIT_LOOKER_CLIENT_SECRET, CP.VALUE),
         State(AgentIds.Detail.INPUT_EDIT_BQ_TABLES, CP.VALUE),
+        State(AgentIds.Detail.INPUT_EDIT_CUSTOM_API_ENDPOINT, CP.VALUE),
     ],
     prevent_initial_call=True,
 )
@@ -776,6 +793,7 @@ def submit_edit(
     looker_client_id,
     looker_client_secret,
     bq_tables_raw,
+    custom_api_endpoint,
 ):
   """Submits the edit form."""
   if not n_clicks:
@@ -805,6 +823,9 @@ def submit_edit(
         for t in bq_tables:
           if not is_valid_bq_table(t):
             invalid_fields.append(f"Invalid BQ Table: {t}")
+      elif isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+        if not custom_api_endpoint:
+          invalid_fields.append("Invalid API Endpoint: Must not be empty")
   except (ValueError, IndexError):
     return False, False, dash.no_update, dash.no_update
 
@@ -834,6 +855,10 @@ def submit_edit(
       # Update Datasource based on what was there
       if isinstance(agent.config.datasource, agent_schemas.BigQueryConfig):
         new_config.datasource = agent_schemas.BigQueryConfig(tables=bq_tables)
+      elif isinstance(agent.config.datasource, agent_schemas.CustomApiConfig):
+        new_config.datasource = agent_schemas.CustomApiConfig(
+            api_endpoint=custom_api_endpoint or "",
+        )
       elif isinstance(agent.config.datasource, agent_schemas.LookerConfig):
         new_config.datasource = agent_schemas.LookerConfig(
             instance_uri=looker_uri, explores=looker_explores
