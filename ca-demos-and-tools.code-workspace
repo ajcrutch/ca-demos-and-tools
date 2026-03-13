@@ -8,21 +8,9 @@
   },
   "folders": [
     {
-      "path": "ca-api-golden-demo",
-    },
-    {
-      "path": "ca-api-adk-streaming",
-    },
-    {
-      "path": "ca-api-adk-react-demo",
-    },
-    {
-      "path": "ca-agent-ops-prism",
-    },
-    {
       "path": ".",
       "name": "root",
-    },
+    }
   ],
   "settings": {
     "editor.formatOnSave": true,

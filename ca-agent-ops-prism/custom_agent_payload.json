@@ -1,0 +1,105 @@
+{
+  "status": "ok",
+  "conversation_id": "test-session",
+  "turn_id": 1,
+  "intent": {
+    "comparison": true,
+    "requires_plan": true,
+    "requires_plan_measures": false,
+    "requires_ly": false,
+    "requires_dimensions": false,
+    "performance": true,
+    "inventory": false,
+    "sales": true,
+    "demand": false,
+    "digital": false,
+    "cyber": false,
+    "yoy": false,
+    "gross": false,
+    "item_level": false,
+    "top_n": false,
+    "bottom_n": false,
+    "limit": 500,
+    "limit_explicit": false
+  },
+  "explore": "merch_holiday_inv_trans_store",
+  "payload": {
+    "model": "merch-ieh",
+    "explore": "merch_holiday_inv_trans_store",
+    "fields": [
+      "pdt_ccs_merch_themes.gifting_category",
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt",
+      "jwn_daily_gifthub_plans.jwn_gifthub_plan_retail"
+    ],
+    "dimensions": [
+      "pdt_ccs_merch_themes.gifting_category"
+    ],
+    "measures": [
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt",
+      "jwn_daily_gifthub_plans.jwn_gifthub_plan_retail"
+    ],
+    "filters": {
+      "fiscal_pop_parameters.day_fy_date": "after 2025/10/20"
+    },
+    "sorts": [
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt desc"
+    ],
+    "limit": 500
+  },
+  "sql": null,
+  "results": [],
+  "looker_url": "https://looker.nordstrom.com/x/02cxmo3p3NlYI7ZNy0St6f",
+  "plan_fallback_used": true,
+  "summary": "\u2b50 DIRECT ANSWER\nThe Looker query did not return any rows, so there is no data available to analyze the performance of gifting categories against plan.\n\n\ud83d\udcca SUPPORTING NUMBERS \nNo data available.\n\n\ud83d\udcc8 TREND / LOGIC\nSince the \"plan_fallback_used\" context is true, this likely means that plan data is not available for the selected filters or data slice. The query is showing actuals instead of plan data.\n\n\ud83e\udde0 BUSINESS INTERPRETATION\nWithout plan data to compare against, it is not possible to assess how the gifting categories are performing relative to their planned targets. The available data only shows the actual operational gross merchandise value (OP GMV) for the gifting categories, but does not provide the planned values needed for a performance comparison.\n\nTo analyze performance to plan, the required plan data would need to be incorporated into the query or data model. Otherwise, only actual performance can be reported without the ability to compare against planned targets.",
+  "timings": {
+    "query_gate": 1.1033735275268555,
+    "total": 10.009437799453735
+  },
+  "nouns": [
+    "gifting categories"
+  ],
+  "grounded_text": "gifting categories",
+  "verification": {
+    "verified": true,
+    "iterations": 0,
+    "issues_found": [],
+    "explanation": "Used canonical example (tier: high, score: 0.779)"
+  },
+  "conversation_state": "gASVZAgAAAAAAACMM2RlZXBfc2VxdWVuY2luZ19hZ2VudC5jb3JlLnN0YXRlLmNvbnZlcnNhdGlvbl9zdGF0ZZSMEUNvbnZlcnNhdGlvblN0YXRllJOUKYGUfZQojA9jb252ZXJzYXRpb25faWSUjAx0ZXN0LXNlc3Npb26UjAd0dXJuX2lklEsCjAltYXhfdHVybnOUSx6MB2V4cGxvcmWUjB1tZXJjaF9ob2xpZGF5X2ludl90cmFuc19zdG9yZZSMBmZpZWxkc5RdlCiMJXBkdF9jY3NfbWVyY2hfdGhlbWVzLmdpZnRpbmdfY2F0ZWdvcnmUjDFjdl9tZXJjaF9maXNjYWxfbWV0cmljc19ob2xpZGF5Lm9wX2dtdl9yZXRhaWxfYW10lIwvanduX2RhaWx5X2dpZnRodWJfcGxhbnMuanduX2dpZnRodWJfcGxhbl9yZXRhaWyUZYwHZmlsdGVyc5R9lIwhZmlzY2FsX3BvcF9wYXJhbWV0ZXJzLmRheV9meV9kYXRllIwQYWZ0ZXIgMjAyNS8xMC8yMJRzjAVzb3J0c5RdlIw2Y3ZfbWVyY2hfZmlzY2FsX21ldHJpY3NfaG9saWRheS5vcF9nbXZfcmV0YWlsX2FtdCBkZXNjlGGMEmxhc3RfdXNlcl9xdWVzdGlvbpSMMUhvdyBhcmUgbXkgZ2lmdGluZyBjYXRlZ29yaWVzIHBlcmZvcm1pbmcgdG8gcGxhbj+UjAx0dXJuX2hpc3RvcnmUXZSMLGRlZXBfc2VxdWVuY2luZ19hZ2VudC5jb3JlLnN0YXRlLnR1cm5fcmVjb3JklIwKVHVyblJlY29yZJSTlCmBlH2UKGgHSwGMCHF1ZXN0aW9ulGgYjApkaW1lbnNpb25zlF2UaA1hjAhtZWFzdXJlc5RdlChoDmgPZWgQfZRoEmgTc2gUXZRoFmGMBWxpbWl0lE30AWgJaAqMB3N1bW1hcnmUWP8BAADirZAgRElSRUNUIEFOU1dFUgpUaGUgTG9va2VyIHF1ZXJ5IGRpZCBub3QgcmV0dXJuIGFueSByb3dzLCBzbyB0aGVyZSBpcyBubyBkYXRhIGF2YWlsYWJsZSB0byBhbmFseXplIHRoZSBwZXJmb3JtYW5jZSBvZiBnaWZ0aW5nIGNhdGVnb3JpZXMgYWdhaW5zdCBwbGFuLgoK8J+TiiBTVVBQT1JUSU5HIE5VTUJFUlMgCk5vIGRhdGEgYXZhaWxhYmxlLgoK8J+TiCBUUkVORCAvIExPR0lDClNpbmNlIHRoZSAicGxhbl9mYWxsYmFja191c2VkIiBjb250ZXh0IGlzIHRydWUsIHRoaXMgbGlrZWx5IG1lYW5zIHRoYXQgcGxhbiBkYXRhIGlzIG5vdCBhdmFpbGFibGUgZm9yIHRoZSBzZWxlY3RlZCBmaWx0ZXJzIG9yIGRhdGEgc2xpY2UuIFRoZSBxdWVyeSBpcyBzaG93aW5nIGFjdHVhbHMgaW5zdGVhZCBvZiBwbGFuIGRhdGEuCgrwn6egIEJVU0lORVNTIElOVEVSUFJFVEFUSU9OCldpdGhvdXQgcGxhbiBkYXRhIHRvIGNvbXBhcmUgYWdhaW5zdCwgaXQgaXMgbm90IHBvc3NpYmxlIHRvIGFzc2VzcyBob3cgdGhllIwKbG9va2VyX3VybJSMNWh0dHBzOi8vbG9va2VyLm5vcmRzdHJvbS5jb20veC8wMmN4bW8zcDNObFlJN1pOeTBTdDZmlIwMZGVsdGFfaW50ZW50lH2UKIwGcmVmaW5llImMCW5ld19xdWVyeZSIjAphZGRfZmlsdGVylImMDXJlbW92ZV9maWx0ZXKUiYwLY2hhbmdlX3RpbWWUiYwSY2hhbmdlX2dyYW51bGFyaXR5lImMB3JlX3JhbmuUiYwOY2hhbmdlX21lYXN1cmWUiYwOY2hhbmdlX2V4cGxvcmWUiYwOaW50ZW5kZWRfbGltaXSUTnWMCXRpbWVzdGFtcJSMIDIwMjYtMDMtMDJUMjE6MzA6NTkuMjE5MDA0KzAwOjAwlHViYYwMYWN0aXZlX3F1ZXJ5lGgbjAtBY3RpdmVRdWVyeZSTlCmBlH2UKGghXZRoDWFoI12UKGgOaA9laBB9lGgSaBNzaBRdlGgWYWgnTfQBaAloCowFbW9kZWyUjAltZXJjaC1pZWiUjAxmaWVsZF9sYWJlbHOUfZQoaA2MG0RpbWVuc2lvbnMgR2lmdGluZyBDYXRlZ29yeZSMEGdpZnRpbmdfY2F0ZWdvcnmUaEeMG0RpbWVuc2lvbnMgR2lmdGluZyBDYXRlZ29yeZRoR2gOjB5NZXRyaWNzIC0gT1AgR01WIE9QIEdNViBSZXRhaWyUjBFvcF9nbXZfcmV0YWlsX2FtdJRoSowlICAgICAgIE1ldHJpY3MgLSBPUCBHTVYgT1AgR01WIFJldGFpbJRoSmgPjDRNZXRyaWNzIC0gSG9saWRheSBQbGFucyBPcCBHTVYgUmV0YWlsIC0gSG9saWRheSBQbGFulIwXanduX2dpZnRodWJfcGxhbl9yZXRhaWyUaE2MNSBNZXRyaWNzIC0gSG9saWRheSBQbGFucyBPcCBHTVYgUmV0YWlsIC0gSG9saWRheSBQbGFulGhNdXVijA9sYXN0X2xvb2tlcl91cmyUaCuMDGxhc3RfcmVzdWx0c5ROjBlsbG1fZmllbGRfc2VsZWN0aW9uX2NhbGxzlEsAjBFsbG1fc3VtbWFyeV9jYWxsc5RLAYwWdmVyaWZpY2F0aW9uX2xsbV9jYWxsc5RLAIwSbWNwX21ldGFkYXRhX2NhbGxzlEsDjA9tY3BfcXVlcnlfY2FsbHOUSwB1Yi4=",
+  "turn_history_length": 1,
+  "active_query": {
+    "dimensions": [
+      "pdt_ccs_merch_themes.gifting_category"
+    ],
+    "measures": [
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt",
+      "jwn_daily_gifthub_plans.jwn_gifthub_plan_retail"
+    ],
+    "filters": {
+      "fiscal_pop_parameters.day_fy_date": "after 2025/10/20"
+    },
+    "sorts": [
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt desc"
+    ],
+    "limit": 500,
+    "explore": "merch_holiday_inv_trans_store",
+    "model": "merch-ieh",
+    "field_labels": {
+      "pdt_ccs_merch_themes.gifting_category": "Dimensions Gifting Category",
+      "gifting_category": "Dimensions Gifting Category",
+      "Dimensions Gifting Category": "Dimensions Gifting Category",
+      "cv_merch_fiscal_metrics_holiday.op_gmv_retail_amt": "Metrics - OP GMV OP GMV Retail",
+      "op_gmv_retail_amt": "Metrics - OP GMV OP GMV Retail",
+      "       Metrics - OP GMV OP GMV Retail": "Metrics - OP GMV OP GMV Retail",
+      "jwn_daily_gifthub_plans.jwn_gifthub_plan_retail": "Metrics - Holiday Plans Op GMV Retail - Holiday Plan",
+      "jwn_gifthub_plan_retail": "Metrics - Holiday Plans Op GMV Retail - Holiday Plan",
+      " Metrics - Holiday Plans Op GMV Retail - Holiday Plan": "Metrics - Holiday Plans Op GMV Retail - Holiday Plan"
+    }
+  },
+  "canonical_match": {
+    "tier": "high",
+    "score": 0.7787,
+    "matched_question_id": 2,
+    "matched_question": "How are gifting categories tracking against their plan?"
+  }
+}
